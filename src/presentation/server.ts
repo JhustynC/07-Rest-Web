@@ -22,8 +22,8 @@ export class Server {
 
   async start() {
     //* Middleware
-    this.app.use(express.json());
-    this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(express.json());// raw
+    this.app.use(express.urlencoded({ extended: true })); //x-www-form-urlencoded
 
     //* CORS
 
