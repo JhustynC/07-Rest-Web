@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../../data/postgres";
-
+import { CreateTodoDto } from "../../domain/dtos";
+import { UpdateTodoDto } from "../../domain/dtos/todos/update-todo.dto";
 
 // const todos = [
 //   { id: 1, title: "Task 1", completed: false, completedAt: new Date() },
@@ -23,7 +24,6 @@ export class TodosController {
     var { id } = req.params;
     const todoId = Number.parseInt(id);
     if (isNaN(todoId)) return res.status(400).json({ message: "Invalid ID" });
-    // const todo = todos.find((t) => t.id === todoId);
 
     //? Using Prisma ORM
     const todo = await prisma.todo.findUnique({
@@ -36,50 +36,35 @@ export class TodosController {
   };
 
   public createTodo = async (req: Request, res: Response) => {
-    const { title } = req.body;
-    if (!title) return res.status(400).json({ message: "Title is required" });
+    const [error, createTodoDto] = CreateTodoDto.create(req.body);
+    if (error) return res.status(400).json({ error: error });
 
     const todo = await prisma.todo.create({
-      data: {
-        title,
-      },
+      data: createTodoDto!,
     });
-
-    // const todo = {
-    //   id: todos.length + 1,
-    //   title,
-    //   completed: false,
-    //   completedAt: new Date(),
-    // };
-    // ? todos.push(todo);
 
     res.json(todo);
   };
 
   public updateTodo = async (req: Request, res: Response) => {
     const id = +req.params.id;
-    if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
+    console.log(id);
+    const [error, updateTodoDto] = UpdateTodoDto.create({ ...req.body, id });
 
-    // const todo = todos.find((t) => t.id === id);
-    const { title, createdAt, completed } = req.body;
+    if (error) return res.status(400).json({ error });
 
     //? Using Prisma ORM
     const todo = await prisma.todo.update({
       where: {
         id,
       },
-      data: {
-        ...req.body,
-      },
+      data: updateTodoDto!.values,
     });
 
     if (!todo)
       return res.status(404).json({ message: `Todo with ${id} id, not found` });
-    // // if (!title) return res.status(404).json({ message: `Title is required` });
-    // todo.title = title || todo.title;
-    // todo.completedAt = new Date(createdAt ?? todo.completedAt);
-    // todo.completed = completed || todo.completed;
-    //! Los objetos se pasan por referencia entonces modificamos directamente la entidad
+
+    //? Los objetos se pasan por referencia entonces modificamos directamente la entidad
     res.json(todo);
   };
 
@@ -88,16 +73,14 @@ export class TodosController {
     if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
 
     //? Using Prisma ORM
-    const todo = await prisma.todo.delete({
+    const deleted = await prisma.todo.delete({
       where: {
         id,
       },
     });
 
-    // const todoIndex = todos.findIndex((t) => t.id === id);
-    // if (todoIndex === -1)
-      // return res.status(404).json({ message: `Todo with ${id} id, not found` });
-    // const todo = todos.splice(todoIndex, 1);
-    return res.json(todo); // No content response
+    deleted
+      ? res.json(deleted)
+      : res.status(404).json({ message: `Todo with ${id} id, not found` });
   };
 }
