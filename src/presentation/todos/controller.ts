@@ -3,12 +3,6 @@ import { prisma } from "../../data/postgres";
 import { CreateTodoDto } from "../../domain/dtos";
 import { UpdateTodoDto } from "../../domain/dtos/todos/update-todo.dto";
 
-// const todos = [
-//   { id: 1, title: "Task 1", completed: false, completedAt: new Date() },
-//   { id: 2, title: "Task 2", completed: true, completedAt: null },
-//   { id: 3, title: "Task 3", completed: false, completedAt: new Date() },
-// ];
-
 export class TodosController {
   //*DI
   constructor() {}
@@ -39,6 +33,7 @@ export class TodosController {
     const [error, createTodoDto] = CreateTodoDto.create(req.body);
     if (error) return res.status(400).json({ error: error });
 
+    //? Using Prisma ORM
     const todo = await prisma.todo.create({
       data: createTodoDto!,
     });
