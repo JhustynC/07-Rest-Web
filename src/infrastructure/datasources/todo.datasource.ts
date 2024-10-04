@@ -22,6 +22,7 @@ export class TodoDatasourceImp implements AbsTodoDatasource {
     throw new Error("Method not implemented.");
   }
   delete(id: number): Promise<void> {
-    throw new Error("Method not implemented.");
+    console.log("implementation");
+    return Promise.resolve();
   }
 }
