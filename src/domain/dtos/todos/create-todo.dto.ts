@@ -1,6 +1,7 @@
 
 export class CreateTodoDto {
-  private constructor(public readonly title: string) { }
+  private constructor(
+    public readonly title: string) { }
 
   static create(props: { [key: string]: any }): [string?, CreateTodoDto?] { 
     const { title } = props;

@@ -1,5 +1,5 @@
 import { prisma } from "../../data/postgres";
-import { AbsTodoDatasource, CreateTodoDto, TodoEntity } from "../../domain";
+import { AbsTodoDatasource, CreateTodoDto, TodoEntity, UpdateTodoDto } from "../../domain";
 
 export class TodoDatasourceImp implements AbsTodoDatasource {
   create(createTodoDto: CreateTodoDto): Promise<TodoEntity> {
@@ -14,13 +14,23 @@ export class TodoDatasourceImp implements AbsTodoDatasource {
       where: {
         id: id,
       },
-    });  
+    });
 
-    return  todoObject ? TodoEntity.fromObject(todoObject) : undefined;
+    return todoObject ? TodoEntity.fromObject(todoObject) : undefined;
   }
-  update(updateTodoDto: CreateTodoDto): Promise<TodoEntity | undefined> {
-    throw new Error("Method not implemented.");
+  async update(updateTodoDto: UpdateTodoDto): Promise<TodoEntity | undefined> {
+    const { title, id } = updateTodoDto
+    const todo = await prisma.todo.update({
+      where: {
+        id,
+      },
+      data: {
+        title,
+      },
+    });
+    return todo? TodoEntity.fromObject(todo) : undefined;
   }
+
   delete(id: number): Promise<void> {
     console.log("implementation");
     return Promise.resolve();
