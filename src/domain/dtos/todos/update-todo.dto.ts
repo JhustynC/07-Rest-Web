@@ -12,7 +12,7 @@ export class UpdateTodoDto {
     if (this.title) {
       values.title = this.title;
     }
-    if (this.completed !== undefined) {
+    if (this.completed) {
       values.completed = this.completed;
     }
     if (this.completedAt) {
@@ -31,7 +31,7 @@ export class UpdateTodoDto {
     const { id, title, completed, completedAt } = props;
     let newCompletedAt = undefined;
 
-    if ( !id || isNaN(id)) {
+    if (!id || isNaN(id)) {
       return ["Id must be a number", undefined];
     }
 

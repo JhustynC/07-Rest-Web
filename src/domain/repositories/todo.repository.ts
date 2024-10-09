@@ -13,5 +13,5 @@ export abstract class AbsTodoRepository {
     updateTodoDto: CreateTodoDto
   ): Promise<TodoEntity | undefined>;
 
-  abstract delete(id: number): Promise<void>;
+  abstract delete(id: number): Promise<TodoEntity>;
 }

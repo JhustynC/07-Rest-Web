@@ -1,60 +1,44 @@
 import { Request, Response } from "express";
 import { prisma } from "../../data/postgres";
-import { CreateTodoDto } from "../../domain/dtos";
-import { UpdateTodoDto } from "../../domain/dtos/todos/update-todo.dto";
+import { AbsTodoRepository, CreateTodoDto, UpdateTodoDto } from "../../domain";
 
 export class TodosController {
   //*DI
-  constructor() {}
+  constructor(private readonly repository: AbsTodoRepository) {}
 
   public getTodos = async (req: Request, res: Response) => {
     //? Using Prisma ORM
-    const todos = await prisma.todo.findMany();
-
-    res.json(todos);
+    const todos = await this.repository.getAll();
+    return res.json(todos);
   };
 
   public getTodoById = async (req: Request, res: Response) => {
-    var { id } = req.params;
-    const todoId = Number.parseInt(id);
-    if (isNaN(todoId)) return res.status(400).json({ message: "Invalid ID" });
+    var todoId = Number.parseInt(req.params.id);
 
-    //? Using Prisma ORM
-    const todo = await prisma.todo.findUnique({
-      where: {
-        id: todoId,
-      },
-    });
-
-    todo ? res.json(todo) : res.status(404).json({ message: "Todo not found" });
+    try {
+      const todo = await this.repository.getById(todoId);
+      return res.json(todo);
+    } catch (err) {
+      res.status(404).json({ message: `${err}` });
+    }
   };
 
   public createTodo = async (req: Request, res: Response) => {
     const [error, createTodoDto] = CreateTodoDto.create(req.body);
     if (error) return res.status(400).json({ error: error });
 
-    //? Using Prisma ORM
-    const todo = await prisma.todo.create({
-      data: createTodoDto!,
-    });
+    const todo = await this.repository.create(createTodoDto!);
 
     res.json(todo);
   };
 
   public updateTodo = async (req: Request, res: Response) => {
     const id = +req.params.id;
-    console.log(id);
     const [error, updateTodoDto] = UpdateTodoDto.create({ ...req.body, id });
-
     if (error) return res.status(400).json({ error });
 
     //? Using Prisma ORM
-    const todo = await prisma.todo.update({
-      where: {
-        id,
-      },
-      data: updateTodoDto!.values,
-    });
+    const todo = await this.repository.update(updateTodoDto!);
 
     if (!todo)
       return res.status(404).json({ message: `Todo with ${id} id, not found` });
@@ -67,15 +51,11 @@ export class TodosController {
     const id = +req.params.id;
     if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
 
-    //? Using Prisma ORM
-    const deleted = await prisma.todo.delete({
-      where: {
-        id,
-      },
-    });
-
-    deleted
-      ? res.json(deleted)
-      : res.status(404).json({ message: `Todo with ${id} id, not found` });
+    try {
+      const deleted = await this.repository.delete(id);
+      return res.json(deleted);
+    } catch (err) {
+      return res.status(404).json({ message: `${err}` });
+    }
   };
 }

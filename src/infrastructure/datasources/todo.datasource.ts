@@ -7,13 +7,17 @@ import {
 } from "../../domain";
 
 export class TodoDatasourceImp implements AbsTodoDatasource {
-  create(createTodoDto: CreateTodoDto): Promise<TodoEntity> {
-    throw new Error("Method not implemented.");
+  async create(createTodoDto: CreateTodoDto): Promise<TodoEntity> {
+    const todo = await prisma.todo.create({
+      data: createTodoDto,
+    });
+
+    return TodoEntity.fromObject(todo);
   }
 
   async getAll(): Promise<TodoEntity[]> {
     const todos = await prisma.todo.findMany();
-    return todos.map(TodoEntity.fromObject);
+    return todos.map((todo) => TodoEntity.fromObject(todo));
   }
 
   async getById(id: number): Promise<TodoEntity | undefined> {
@@ -22,29 +26,37 @@ export class TodoDatasourceImp implements AbsTodoDatasource {
         id: id,
       },
     });
-
-    return todoObject ? TodoEntity.fromObject(todoObject) : undefined;
+    if (todoObject) return TodoEntity.fromObject(todoObject!);
+    throw `Todo with id ${id} not found`;
   }
 
   async update(updateTodoDto: UpdateTodoDto): Promise<TodoEntity | undefined> {
-    const { title, id } = updateTodoDto;
-    const todo = await prisma.todo.update({
+    const { id } = updateTodoDto;
+
+    await this.getById(id);
+
+    const updateTodo = await prisma.todo.update({
       where: {
-        id,
+        id: id,
       },
       data: {
-        title,
+        ...updateTodoDto.values,
       },
     });
-    return todo ? TodoEntity.fromObject(todo) : undefined;
+
+    if (updateTodo) return TodoEntity.fromObject(updateTodo);
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: number): Promise<TodoEntity> {
+    await this.getById(id);
+
     const todo = await prisma.todo.delete({
       where: {
         id,
       },
     });
-    return todo ? Promise.resolve() : undefined;
+
+    if (todo) return TodoEntity.fromObject(todo);
+    throw `Error deleting todo with id ${id}`;
   }
 }
