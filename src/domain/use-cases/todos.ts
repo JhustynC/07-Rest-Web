@@ -1,4 +1,0 @@
-
-interface TodoUseCase {
-  execute(): void,
-}

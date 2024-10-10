@@ -1,31 +1,22 @@
 import { Request, Response } from "express";
-import {
-  AbsTodoRepository,
-  CreateTodoDto,
-  UpdateTodoDto,
-  GetTodo,
-  GetTodos,
-  CreateTodo,
-  DeleteTodo,
-  UpdateTodo,
-} from "../../domain";
+import { prisma } from "../../data/postgres";
+import { AbsTodoRepository, CreateTodoDto, UpdateTodoDto } from "../../domain";
 
 export class TodosController {
   //*DI
   constructor(private readonly repository: AbsTodoRepository) {}
 
   public getTodos = async (req: Request, res: Response) => {
-    const getTodosUseCase = new GetTodos(this.repository);
-    const todos = await getTodosUseCase.exceute();
+    //? Using Prisma ORM
+    const todos = await this.repository.getAll();
     return res.json(todos);
   };
 
   public getTodoById = async (req: Request, res: Response) => {
-    const getTodoUseCase = new GetTodo(this.repository);
     var todoId = Number.parseInt(req.params.id);
 
     try {
-      const todo = await getTodoUseCase.exceute(todoId);
+      const todo = await this.repository.getById(todoId);
       return res.json(todo);
     } catch (err) {
       res.status(404).json({ message: `${err}` });
