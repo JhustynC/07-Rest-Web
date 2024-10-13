@@ -14,57 +14,50 @@ export class TodosController {
   //*DI
   constructor(private readonly repository: AbsTodoRepository) {}
 
-  public getTodos = async (req: Request, res: Response) => {
-    const getTodosUseCase = new GetTodos(this.repository);
-    const todos = await getTodosUseCase.exceute();
-    return res.json(todos);
+  public getTodos = (req: Request, res: Response) => {
+    new GetTodos(this.repository)
+      .exceute()
+      .then((todos) => res.json(todos))
+      .catch((err) => res.status(404).json({ error: `${err}` }));
   };
 
-  public getTodoById = async (req: Request, res: Response) => {
-    const getTodoUseCase = new GetTodo(this.repository);
+  public getTodoById = (req: Request, res: Response) => {
     var todoId = Number.parseInt(req.params.id);
-
-    try {
-      const todo = await getTodoUseCase.exceute(todoId);
-      return res.json(todo);
-    } catch (err) {
-      res.status(404).json({ message: `${err}` });
-    }
+    new GetTodo(this.repository)
+      .exceute(todoId)
+      .then((todo) => res.json(todo))
+      .catch((err) => res.status(404).json({ error: `${err}` }));
   };
 
-  public createTodo = async (req: Request, res: Response) => {
+  public createTodo = (req: Request, res: Response) => {
     const [error, createTodoDto] = CreateTodoDto.create(req.body);
     if (error) return res.status(400).json({ error: error });
 
-    const todo = await this.repository.create(createTodoDto!);
-
-    res.json(todo);
+    new CreateTodo(this.repository)
+      .exceute(createTodoDto!)
+      .then((todo) => res.json(todo))
+      .catch((err) => res.status(404).json({ error: `${err}` }));
   };
 
-  public updateTodo = async (req: Request, res: Response) => {
+  public updateTodo = (req: Request, res: Response) => {
     const id = +req.params.id;
     const [error, updateTodoDto] = UpdateTodoDto.create({ ...req.body, id });
     if (error) return res.status(400).json({ error });
 
     //? Using Prisma ORM
-    const todo = await this.repository.update(updateTodoDto!);
-
-    if (!todo)
-      return res.status(404).json({ message: `Todo with ${id} id, not found` });
-
-    //? Los objetos se pasan por referencia entonces modificamos directamente la entidad
-    res.json(todo);
+    new UpdateTodo(this.repository)
+      .exceute(updateTodoDto!)
+      .then((todo) => res.json(todo))
+      .catch((err) => res.status(404).json({ error: `${err}` }));
   };
 
   public deleteTodo = async (req: Request, res: Response) => {
     const id = +req.params.id;
-    if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
 
-    try {
-      const deleted = await this.repository.delete(id);
-      return res.json(deleted);
-    } catch (err) {
-      return res.status(404).json({ message: `${err}` });
-    }
+    new DeleteTodo(this.repository)
+      .exceute(id)
+      .then((todo) => res.json(todo))
+      .catch((err) => res.status(400).json({ error: `${err}` }));
   };
 }
