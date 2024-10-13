@@ -1,4 +1,7 @@
 node_modules/
 keys/
-.env
 postgres-data/
+coverage/
+
+.env
+.env.test
