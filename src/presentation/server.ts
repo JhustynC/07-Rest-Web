@@ -2,7 +2,7 @@ import express, { Router } from "express";
 import path from "path";
 import compression from "compression";
 
-interface Options {
+export interface Options {
   port: number;
   routes: Router;
   publicPath?: string;
