@@ -15,7 +15,7 @@ describe("presentation/routes.ts", () => {
     // Obtener las expresiones regulares de las rutas en el stack
     const routesRegexps = router.stack.map((layer: any) => layer.regexp);
 
-    console.log(router.stack);
+    // console.log(router.stack);
 
     // Verifica si la expresión regular para "/api/v1/todos" está en el stack
     const todosRouteRegexp = /^\/api\/v1\/todos\/?(?=\/|$)/i;

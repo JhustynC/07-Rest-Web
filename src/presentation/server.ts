@@ -1,5 +1,6 @@
 import express, { Router } from "express";
 import path from "path";
+import * as http from "http";
 import compression from "compression";
 
 export interface Options {
@@ -9,7 +10,8 @@ export interface Options {
 }
 
 export class Server {
-  private app = express();
+  private readonly app = express();
+  private http?: http.Server;
   private readonly port: number;
   private readonly publicPath: string;
   private readonly router: Router;
@@ -19,6 +21,10 @@ export class Server {
     this.port = port;
     this.publicPath = publicPath || "public";
     this.router = router;
+  }
+
+  public get invoke(): express.Application {
+    return this.app;
   }
 
   async start() {
@@ -46,8 +52,12 @@ export class Server {
       return;
     });
 
-    this.app.listen(this.port, () => {
+    this.http = this.app.listen(this.port, () => {
       console.log(`Server is running on port http://localhost:${this.port}`);
     });
   }
+
+  public stop = async (): Promise<void> => {
+    await this.http?.close(); 
+  };
 }

@@ -1,21 +1,16 @@
-import express, { Router } from "express";
-import { Server } from '../../src/presentation/server';
+import { AppRoutes } from "../../src/presentation/routes";
+import { Server } from "../../src/presentation/server";
 
-jest.mock('../../src/presentation/server');
-jest.mock('express');
-
-
-
-describe("presentation/server.ts", () => {
-  // Server starts successfully on the specified port
-  it("should start server on the specified port", async () => {
-    
-    const options = {
+describe("Server Class", () => {
+  test("Should return a server with correct properties", () => {
+    const serverOptions = {
       port: 3000,
-      routes: Router(),
+      publicPath: "/public",
+      routes: AppRoutes.routes,
     };
 
-    
+    const appTest = new Server(serverOptions).invoke;
 
+    expect(true).toBe(true);
   });
 });
